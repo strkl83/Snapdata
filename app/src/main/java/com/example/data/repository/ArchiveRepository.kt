@@ -96,7 +96,55 @@ class ArchiveRepository(
         }
     }.flowOn(Dispatchers.IO)
 
+    private val zipImporter = com.example.data.parser.ZipArchiveImporter(context)
+
+    fun getFilteredGalleryMedia(
+        searchQuery: String,
+        mediaTypeFilter: String,
+        senderFilter: String,
+        favoritesOnly: Boolean
+    ): Flow<List<SnapArchiveEntity>> = flow {
+        val startTime = System.nanoTime()
+        dao.getFilteredGalleryMediaItems(
+            searchQuery = searchQuery,
+            mediaTypeFilter = mediaTypeFilter,
+            senderFilter = senderFilter,
+            favoritesOnly = favoritesOnly
+        ).collect { items ->
+            val elapsedMs = (System.nanoTime() - startTime) / 1_000_000
+            dao.logPerformance(
+                QueryPerformanceLogEntity(
+                    queryType = "MEDIA_GALLERY_QUERY",
+                    executionTimeMs = elapsedMs,
+                    rowCount = items.size,
+                    isIndexed = true
+                )
+            )
+            emit(items)
+        }
+    }.flowOn(Dispatchers.IO)
+
     fun getMemories(): Flow<List<SnapArchiveEntity>> = dao.getMemoriesItems()
+
+    suspend fun importSnapchatZipUri(uri: android.net.Uri): com.example.data.parser.ZipArchiveImporter.ZipImportResult {
+        return withContext(Dispatchers.IO) {
+            val startTime = System.currentTimeMillis()
+            val result = zipImporter.processZipUri(uri)
+            if (result.entities.isNotEmpty()) {
+                dao.insertAll(result.entities)
+            }
+            val elapsed = System.currentTimeMillis() - startTime
+            dao.logPerformance(
+                QueryPerformanceLogEntity(
+                    queryType = "ZIP_ARCHIVE_UNPACK_IMPORT",
+                    executionTimeMs = elapsed,
+                    rowCount = result.entities.size,
+                    isIndexed = true
+                )
+            )
+            result
+        }
+    }
 
     suspend fun runBrokenLinkRepairScan(customSearchDir: File? = null): MediaLinkResolver.RelinkResult {
         return withContext(Dispatchers.IO) {

@@ -57,6 +57,31 @@ interface ArchiveDao {
 
     @Query("""
         SELECT * FROM snap_archive_items 
+        WHERE mediaType IN ('PHOTO', 'VIDEO', 'OVERLAY', 'SNAP_RECEIVED', 'SNAP_SENT')
+           OR source = 'MEMORIES'
+        ORDER BY timestamp DESC
+    """)
+    fun getAllGalleryMediaItems(): Flow<List<SnapArchiveEntity>>
+
+    @Query("""
+        SELECT * FROM snap_archive_items 
+        WHERE (mediaType IN ('PHOTO', 'VIDEO', 'OVERLAY', 'SNAP_RECEIVED', 'SNAP_SENT') OR source = 'MEMORIES')
+          AND mediaType != 'TEXT_CHAT'
+          AND (:searchQuery = '' OR content LIKE '%' || :searchQuery || '%' OR sender LIKE '%' || :searchQuery || '%' OR location LIKE '%' || :searchQuery || '%')
+          AND (:mediaTypeFilter = 'ALL' OR mediaType = :mediaTypeFilter)
+          AND (:senderFilter = 'ALL' OR sender = :senderFilter)
+          AND (:favoritesOnly = 0 OR isFavorite = 1)
+        ORDER BY timestamp DESC
+    """)
+    fun getFilteredGalleryMediaItems(
+        searchQuery: String,
+        mediaTypeFilter: String,
+        senderFilter: String,
+        favoritesOnly: Boolean
+    ): Flow<List<SnapArchiveEntity>>
+
+    @Query("""
+        SELECT * FROM snap_archive_items 
         WHERE source = 'MEMORIES' OR mediaType IN ('PHOTO', 'VIDEO', 'OVERLAY')
         ORDER BY timestamp DESC
     """)

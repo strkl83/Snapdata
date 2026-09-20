@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.FolderZip
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.Speed
@@ -56,6 +57,7 @@ import com.example.data.entity.SnapArchiveEntity
 import com.example.data.viewmodel.ArchiveViewModel
 import com.example.ui.components.MediaPreviewModal
 import com.example.ui.screens.ChatsScreen
+import com.example.ui.screens.GalleryScreen
 import com.example.ui.screens.ImportExportScreen
 import com.example.ui.screens.LinkFixerScreen
 import com.example.ui.screens.MemoriesScreen
@@ -104,11 +106,12 @@ class MainActivity : ComponentActivity() {
                     ) {
                         when (selectedTab) {
                             0 -> TimelineScreen(viewModel = viewModel)
-                            1 -> ChatsScreen(viewModel = viewModel)
-                            2 -> MemoriesScreen(viewModel = viewModel)
-                            3 -> LinkFixerScreen(viewModel = viewModel)
-                            4 -> PerformanceScreen(viewModel = viewModel)
-                            5 -> ImportExportScreen(viewModel = viewModel)
+                            1 -> GalleryScreen(viewModel = viewModel)
+                            2 -> ChatsScreen(viewModel = viewModel)
+                            3 -> MemoriesScreen(viewModel = viewModel)
+                            4 -> LinkFixerScreen(viewModel = viewModel)
+                            5 -> PerformanceScreen(viewModel = viewModel)
+                            6 -> ImportExportScreen(viewModel = viewModel)
                         }
 
                         // Fullscreen Media Detail / Link Repair Modal
@@ -229,6 +232,18 @@ fun MainNavigationBar(
         NavigationBarItem(
             selected = selectedTab == 1,
             onClick = { onTabSelected(1) },
+            icon = { Icon(Icons.Default.GridView, contentDescription = "Gallery") },
+            label = { Text("Gallery", fontSize = 10.sp) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.Black,
+                selectedTextColor = SnapYellow,
+                indicatorColor = SnapYellow
+            )
+        )
+
+        NavigationBarItem(
+            selected = selectedTab == 2,
+            onClick = { onTabSelected(2) },
             icon = { Icon(Icons.Default.ChatBubble, contentDescription = "Chats") },
             label = { Text("Chats", fontSize = 10.sp) },
             colors = NavigationBarItemDefaults.colors(
@@ -239,8 +254,8 @@ fun MainNavigationBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == 2,
-            onClick = { onTabSelected(2) },
+            selected = selectedTab == 3,
+            onClick = { onTabSelected(3) },
             icon = { Icon(Icons.Default.Image, contentDescription = "Memories") },
             label = { Text("Memories", fontSize = 10.sp) },
             colors = NavigationBarItemDefaults.colors(
@@ -251,8 +266,8 @@ fun MainNavigationBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == 3,
-            onClick = { onTabSelected(3) },
+            selected = selectedTab == 4,
+            onClick = { onTabSelected(4) },
             icon = {
                 if (brokenCount > 0) {
                     BadgedBox(badge = { Badge { Text("$brokenCount") } }) {
@@ -271,8 +286,8 @@ fun MainNavigationBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == 4,
-            onClick = { onTabSelected(4) },
+            selected = selectedTab == 5,
+            onClick = { onTabSelected(5) },
             icon = { Icon(Icons.Default.Speed, contentDescription = "Performance") },
             label = { Text("Speed", fontSize = 10.sp) },
             colors = NavigationBarItemDefaults.colors(
@@ -283,8 +298,8 @@ fun MainNavigationBar(
         )
 
         NavigationBarItem(
-            selected = selectedTab == 5,
-            onClick = { onTabSelected(5) },
+            selected = selectedTab == 6,
+            onClick = { onTabSelected(6) },
             icon = { Icon(Icons.Default.FolderZip, contentDescription = "Import/Export") },
             label = { Text("Import", fontSize = 10.sp) },
             colors = NavigationBarItemDefaults.colors(

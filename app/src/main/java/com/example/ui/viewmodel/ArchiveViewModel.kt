@@ -38,6 +38,8 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
 
     val isRepairingLinks = MutableStateFlow(false)
     val relinkResult = MutableStateFlow<MediaLinkResolver.RelinkResult?>(null)
+    val isImportingZip = MutableStateFlow(false)
+    val zipImportResult = MutableStateFlow<com.example.data.parser.ZipArchiveImporter.ZipImportResult?>(null)
     val benchmarkLogs = MutableStateFlow<List<QueryPerformanceLogEntity>>(emptyList())
 
     val archiveStats: StateFlow<ArchiveStats?> = repository.statsFlow.stateIn(
@@ -109,6 +111,27 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
     )
 
     val memoriesList: StateFlow<List<SnapArchiveEntity>> = repository.getMemories().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val galleryMediaItems: StateFlow<List<SnapArchiveEntity>> = combine(
+        searchQuery,
+        mediaTypeFilter,
+        senderFilter,
+        favoritesOnlyFilter
+    ) { query, type, sender, favs ->
+        FilterParams(query, type, sender, false, favs)
+    }.flatMapLatest { params ->
+        repository.getFilteredGalleryMedia(
+            searchQuery = params.query,
+            mediaTypeFilter = params.type,
+            senderFilter = params.sender,
+            favoritesOnly = params.favs
+        )
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
@@ -190,5 +213,18 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.resetToSampleArchive()
         }
+    }
+
+    fun importZipArchive(uri: android.net.Uri) {
+        viewModelScope.launch {
+            isImportingZip.value = true
+            val res = repository.importSnapchatZipUri(uri)
+            zipImportResult.value = res
+            isImportingZip.value = false
+        }
+    }
+
+    fun dismissZipReport() {
+        zipImportResult.value = null
     }
 }
