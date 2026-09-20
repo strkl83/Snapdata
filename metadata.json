@@ -1,0 +1,6 @@
+{
+  "name": "SnapArchive",
+  "description": "Snapchat My Data archive organizer, broken media link fixer, database query performance optimizer, and unified chats, snaps & memories timeline viewer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
